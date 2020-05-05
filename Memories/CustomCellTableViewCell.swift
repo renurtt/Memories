@@ -18,9 +18,11 @@ class CustomCellTableViewCell: UITableViewCell {
         headerView.font = UIFont.init(name: "EuphemiaUCAS", size: 25)
         headerView.isScrollEnabled = false
         headerView.backgroundColor = nil
+        headerView.textColor = UIColor.init(red: 55/256, green: 0/256, blue: 66/256, alpha: 1.0)
         headerView.isEditable = false
         headerView.isSelectable = false
         headerView.translatesAutoresizingMaskIntoConstraints = false
+        headerView.textAlignment = NSTextAlignment.justified
         
         return headerView
     }()
@@ -31,7 +33,7 @@ class CustomCellTableViewCell: UITableViewCell {
         
         dateView.isEditable = false
         dateView.isSelectable = false
-        dateView.textColor = UIColor.red
+        dateView.textColor = UIColor.init(red: 0, green: 80/256, blue: 80/256, alpha: 1.0)
         dateView.font = UIFont.init(name: "Courier", size: 14)
         dateView.isScrollEnabled = false
         dateView.backgroundColor = nil
@@ -48,10 +50,10 @@ class CustomCellTableViewCell: UITableViewCell {
         self.addSubview(headerView)
         self.addSubview(dateView)
         
-        
+        self.backgroundColor = UIColor.init(red: 256/256, green: 256/256, blue: 256/256, alpha: 0.0)
         
         //dateView.leftAnchor.constraint(equalTo: self.headerView.rightAnchor).isActive = true
-        dateView.rightAnchor.constraint(equalTo: self.rightAnchor).isActive = true
+        dateView.rightAnchor.constraint(greaterThanOrEqualTo: self.rightAnchor, constant: -10).isActive = true
         dateView.topAnchor.constraint(equalTo: self.topAnchor).isActive = true
         dateView.bottomAnchor.constraint(greaterThanOrEqualTo: self.topAnchor, constant: 30).isActive = true
         dateView.widthAnchor.constraint(equalToConstant: 100).isActive = true
@@ -59,7 +61,7 @@ class CustomCellTableViewCell: UITableViewCell {
         headerView.leftAnchor.constraint(greaterThanOrEqualTo: self.leftAnchor, constant: 10).isActive = true
         headerView.topAnchor.constraint(equalTo: self.topAnchor, constant: 10).isActive = true
         headerView.bottomAnchor.constraint(equalTo: self.bottomAnchor).isActive = true
-        headerView.widthAnchor.constraint(equalTo: self.widthAnchor).isActive = true
+        headerView.widthAnchor.constraint(equalTo: self.widthAnchor, constant: -20).isActive = true
     }
     
     required init?(coder: NSCoder) {
