@@ -24,6 +24,8 @@ class CustomCellTableViewCell: UITableViewCell {
         headerView.translatesAutoresizingMaskIntoConstraints = false
         headerView.textAlignment = NSTextAlignment.justified
         
+        headerView.isUserInteractionEnabled = false
+        
         return headerView
     }()
     
@@ -39,6 +41,8 @@ class CustomCellTableViewCell: UITableViewCell {
         dateView.backgroundColor = nil
         
         dateView.translatesAutoresizingMaskIntoConstraints = false
+        
+        dateView.isUserInteractionEnabled = false
         
         return dateView
     }()
@@ -62,6 +66,8 @@ class CustomCellTableViewCell: UITableViewCell {
         headerView.topAnchor.constraint(equalTo: self.topAnchor, constant: 10).isActive = true
         headerView.bottomAnchor.constraint(equalTo: self.bottomAnchor).isActive = true
         headerView.widthAnchor.constraint(equalTo: self.widthAnchor, constant: -20).isActive = true
+        
+        
     }
     
     required init?(coder: NSCoder) {

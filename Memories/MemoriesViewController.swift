@@ -9,23 +9,30 @@
 import Parse
 import UIKit
 
-struct CellData {
+public class Memory {
+    internal init(header: String, date: Date, memoryContent: String, id: String) {
+        self.header = header
+        self.date = date
+        self.memoryContent = memoryContent
+        self.id = id
+    }
+    
     let header : String
     let date : Date
     let memoryContent : String
-    let id : String
+    var id : String
     
-    func equalTo(rhs: CellData) -> Bool {
+    func equalTo(rhs: Memory) -> Bool {
         return self.id == rhs.id && self.header == rhs.header && self.date == rhs.date && self.memoryContent == rhs.memoryContent
     }
 }
 
-func ==(lhs: CellData, rhs: CellData) -> Bool {
+func ==(lhs: Memory, rhs: Memory) -> Bool {
     return lhs.equalTo(rhs: rhs)
 }
 
 class MemoriesViewController: UITableViewController {
-    var data = [CellData]() {
+    var data = [Memory]() {
         didSet {
             self.dataChanged = true
         }
@@ -33,6 +40,8 @@ class MemoriesViewController: UITableViewController {
     var dataChanged = false
     
     var currentUser : PFUser?
+    
+    var imageView :UIImageView?
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -58,11 +67,31 @@ class MemoriesViewController: UITableViewController {
         self.tableView.tableHeaderView?.topAnchor.constraint(equalTo: self.view.topAnchor).isActive = true
         self.tableView.tableHeaderView?.leadingAnchor.constraint(equalTo: self.view.leadingAnchor).isActive = true
         self.tableView.tableHeaderView?.trailingAnchor.constraint(equalTo: self.view.trailingAnchor).isActive = true
-        
+         /*
+         //indicator of connection (not used)
+         imageView = UIImageView(image: UIImage(systemName: "cloud.fill"))
+         self.tableView.tableHeaderView?.addSubview(imageView!)
+         imageView?.leftAnchor.constraint(greaterThanOrEqualTo: self.tableView.leftAnchor, constant: 30).isActive = true
+         imageView?.topAnchor.constraint(equalTo: self.tableView.topAnchor).isActive = true
+         imageView?.widthAnchor.constraint(equalToConstant: 30).isActive = true
+         imageView?.isHidden = true
+        */
         
         self.refreshControl = UIRefreshControl()
         self.refreshControl!.addTarget(self, action: #selector(MemoriesViewController.handleRefresh(_:)), for: UIControl.Event.valueChanged)
         self.refreshControl?.bottomAnchor.constraint(equalTo: self.tableView.topAnchor, constant: 50).isActive = true
+        
+        topButton.addTarget(self, action: #selector(MemoriesViewController.createButtonPressed(_:)), for: UIControl.Event.touchUpInside)
+        
+    }
+    
+    @IBAction func createButtonPressed(_ sender: Any) {
+        if let vc = UIStoryboard(name: "Main", bundle: nil).instantiateViewController(withIdentifier: "CreateMemoryViewController") as? CreateMemoryViewController {
+            vc.memoriesVC = self
+            
+            vc.modalTransitionStyle = .coverVertical
+            present(vc, animated: true, completion: nil)
+        }
     }
     
     func getMemories() {
@@ -86,28 +115,31 @@ class MemoriesViewController: UITableViewController {
                 print(error)
             }
             for object in objects {
-                self.data.append(CellData.init(header: object.object(forKey: "header") as! String, date: object.object(forKey: "date") as! Date, memoryContent: object.object(forKey: "memoryContent") as! String, id: object.objectId!))
+                self.data.append(Memory.init(header: object.object(forKey: "header") as! String, date: object.object(forKey: "date") as! Date, memoryContent: object.object(forKey: "memoryContent") as! String, id: object.objectId!))
             }
             self.tableView.reloadSections(IndexSet(integer: 0), with: .none)
             
-            self.dataChanged = false
+            
         }
         
+        self.dataChanged = false
         query.cachePolicy = PFCachePolicy.networkOnly
+        
         query.findObjectsInBackground {
             (objects, error) in
             if let error = error {
                 print("Error: \(error) \(error.localizedDescription)")
+                self.refreshControl?.endRefreshing()
                 return
             }
             if let objects = objects {
                 if (objects.count>0) {
-                    var new_obj :CellData
+                    var new_obj :Memory
                     var object :PFObject
                     
                     for i in 0...objects.count-1 {
                         object = objects[i]
-                        new_obj = CellData.init(header: object.object(forKey: "header") as! String, date: object.object(forKey: "date") as! Date, memoryContent: object.object(forKey: "memoryContent") as! String, id: object.objectId!)
+                        new_obj = Memory.init(header: object.object(forKey: "header") as! String, date: object.object(forKey: "date") as! Date, memoryContent: object.object(forKey: "memoryContent") as! String, id: object.objectId!)
                         if i < self.data.count && !(new_obj == self.data[i]) || i >= self.data.count {
                             if i < self.data.count {
                                 self.data[i] = new_obj
@@ -121,7 +153,7 @@ class MemoriesViewController: UITableViewController {
                         self.data.removeLast()
                     }
                     if (self.dataChanged) {
-                        self.tableView.reloadSections(IndexSet(integer: 0), with: .none)
+                        self.tableView.reloadSections(IndexSet(integer: 0), with: .fade)
                         self.dataChanged = false
                     }
                 }
@@ -130,16 +162,45 @@ class MemoriesViewController: UITableViewController {
         }
     }
 
+    func updateData(at i : Int, new_data : Memory) {
+        data[i] = new_data
+        self.tableView.reloadRows(at: [IndexPath(row: i, section: 0)], with: .none)
+    }
+    
+    func addData(new_data : Memory) {
+        data.insert(new_data, at: 0)
+        self.tableView.insertRows(at: [IndexPath(row: 0, section: 0)], with: .fade)
+    }
     
     override func viewDidAppear(_ animated: Bool) {
         if currentUser == nil {
             loadSignInScreen()
         }
+        self.refreshControl?.endRefreshing()
     }
     
     override func viewWillAppear(_ animated: Bool) {
         if currentUser != nil {
             getMemories()
+        }
+        
+    }
+    
+    override func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCell.EditingStyle, forRowAt indexPath: IndexPath) {
+        if (editingStyle == .delete) {
+            let query = PFQuery(className: "Memories")
+            
+            query.whereKey("objectId", equalTo: data[indexPath.row].id)
+            query.findObjectsInBackground { (objects :Optional<Array<PFObject>> , error: Optional<Error>) -> () in
+                if let objects = objects {
+                    for object in objects {
+                        object.deleteEventually()
+                    }
+                }
+            }
+            
+            data.remove(at: indexPath.row)
+            self.tableView.deleteRows(at: [indexPath], with: .fade)
         }
     }
     
@@ -153,10 +214,22 @@ class MemoriesViewController: UITableViewController {
     
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = self.tableView.dequeueReusableCell(withIdentifier: "memoryCell") as! CustomCellTableViewCell
+
         cell.header = data[indexPath.row].header
         cell.date = data[indexPath.row].date
         cell.layoutSubviews()
         return cell
+    }
+    
+    override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        if let vc = UIStoryboard(name: "Main", bundle: nil).instantiateViewController(withIdentifier: "MemoryDetailsViewController") as? MemoryDetailsViewController {
+            
+            vc.memoryNumber = indexPath.row
+            vc.memory = data[indexPath.row]
+            vc.memoriesVC = self
+            vc.modalTransitionStyle = .coverVertical
+            present(vc, animated: true, completion: nil)
+        }
     }
     
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
