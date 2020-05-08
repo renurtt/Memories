@@ -20,6 +20,7 @@ class CreateMemoryViewController: UIViewController, UITextViewDelegate {
     
     var Saved : Bool = false
     
+    
     var memoriesVC : MemoriesViewController!
     
     @IBAction func datePickerValueChanged(_ sender: Any) {
@@ -54,6 +55,9 @@ class CreateMemoryViewController: UIViewController, UITextViewDelegate {
             displayErrorMessage(message: "Memory title and content can't be empty.")
             return
         }
+        //
+        new_mem.mentions = ["renurtt17", "renurtt7", "renurtt17", "renurtt7", "renurtt17", "renurtt7"]
+        //
         self.memoriesVC.addData(new_data: new_mem)
         Saved = true
         
@@ -62,13 +66,15 @@ class CreateMemoryViewController: UIViewController, UITextViewDelegate {
         new_memory["memoryContent"] = new_mem.memoryContent
         new_memory["date"] = new_mem.date
         new_memory["owner"] = PFUser.current()
+        
+        new_memory["mentions"] = ["renurtt17", "renurtt7", "renurtt17", "renurtt7", "renurtt17", "renurtt7"]
+        
         new_memory.saveInBackground {
             (success: Bool, error: Error?) in
             if let error = error {
                 print(error)
             } else {
                 new_mem.id = new_memory.objectId!
-                
             }
         }
         if (!self.isBeingDismissed) {
@@ -174,7 +180,7 @@ class CreateMemoryViewController: UIViewController, UITextViewDelegate {
     }
     
     func displayErrorMessage(message:String) {
-        let alertView = UIAlertController(title: "Error!", message: message, preferredStyle: .alert)
+        let alertView = UIAlertController(title: "Error", message: message, preferredStyle: .alert)
         let OKAction = UIAlertAction(title: "OK", style: .default) { (action:UIAlertAction) in
         }
         alertView.addAction(OKAction)

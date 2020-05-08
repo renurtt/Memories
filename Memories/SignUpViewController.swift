@@ -15,7 +15,15 @@ class SignUpViewController: UIViewController {
         signUpUsernameField.text = ""
         signUpPasswordField.text = ""
         // Do any additional setup after loading the view.
+        let tap: UITapGestureRecognizer = UITapGestureRecognizer(target: self, action: #selector(self.dismissKeyboard))
+
+        view.addGestureRecognizer(tap)
     }
+    
+    @objc func dismissKeyboard() {
+        view.endEditing(true)
+    }
+    
     @IBOutlet fileprivate var signUpUsernameField: UITextField!
     @IBOutlet fileprivate var signUpPasswordField: UITextField!
     
@@ -82,7 +90,13 @@ class SignInViewController: UIViewController {
         super.viewDidLoad()
         signInUsernameField.text = ""
         signInPasswordField.text = ""
-        // Do any additional setup after loading the view.
+        let tap: UITapGestureRecognizer = UITapGestureRecognizer(target: self, action: #selector(self.dismissKeyboard))
+        
+        view.addGestureRecognizer(tap)
+    }
+    
+    @objc func dismissKeyboard() {
+        view.endEditing(true)
     }
     @IBOutlet fileprivate var signInUsernameField: UITextField!
     @IBOutlet fileprivate var signInPasswordField: UITextField!

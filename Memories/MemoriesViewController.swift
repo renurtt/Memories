@@ -22,8 +22,10 @@ public class Memory {
     let memoryContent : String
     var id : String
     
+    var mentions : [String] = []
+    
     func equalTo(rhs: Memory) -> Bool {
-        return self.id == rhs.id && self.header == rhs.header && self.date == rhs.date && self.memoryContent == rhs.memoryContent
+        return self.id == rhs.id && self.header == rhs.header && self.date == rhs.date && self.memoryContent == rhs.memoryContent && self.mentions == rhs.mentions
     }
 }
 
@@ -45,6 +47,8 @@ class MemoriesViewController: UITableViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        
+        
         // Do any additional setup after loading the view.
         currentUser = PFUser.current()
         
@@ -115,7 +119,11 @@ class MemoriesViewController: UITableViewController {
                 print(error)
             }
             for object in objects {
-                self.data.append(Memory.init(header: object.object(forKey: "header") as! String, date: object.object(forKey: "date") as! Date, memoryContent: object.object(forKey: "memoryContent") as! String, id: object.objectId!))
+                let new_obj = Memory.init(header: object.object(forKey: "header") as! String, date: object.object(forKey: "date") as! Date, memoryContent: object.object(forKey: "memoryContent") as! String, id: object.objectId!)
+                if let mentions = object.object(forKey: "mentions") {
+                    new_obj.mentions = mentions as! [String]
+                }
+                self.data.append(new_obj)
             }
             self.tableView.reloadSections(IndexSet(integer: 0), with: .none)
             
@@ -140,6 +148,9 @@ class MemoriesViewController: UITableViewController {
                     for i in 0...objects.count-1 {
                         object = objects[i]
                         new_obj = Memory.init(header: object.object(forKey: "header") as! String, date: object.object(forKey: "date") as! Date, memoryContent: object.object(forKey: "memoryContent") as! String, id: object.objectId!)
+                        if let mentions = object.object(forKey: "mentions") {
+                            new_obj.mentions = (mentions as! [String])
+                        }
                         if i < self.data.count && !(new_obj == self.data[i]) || i >= self.data.count {
                             if i < self.data.count {
                                 self.data[i] = new_obj
@@ -237,7 +248,6 @@ class MemoriesViewController: UITableViewController {
     }
     
     @objc func handleRefresh(_ refreshControl: UIRefreshControl) {
-        
         getMemories()
     }
 }

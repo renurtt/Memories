@@ -12,6 +12,7 @@ import Parse
 class MemoryDetailsViewController: UIViewController, UITextViewDelegate {
     @IBOutlet fileprivate var header : UITextView!
     var content : UITextView!
+    var mentions : UIButton!
     @IBOutlet weak var date: UIButton!
     let datePicker = UIDatePicker()
     let txtView = UITextView()
@@ -48,6 +49,8 @@ class MemoryDetailsViewController: UIViewController, UITextViewDelegate {
         date.sizeToFit()
         // Do any additional setup after loading the view.
         content = UITextView()
+        mentions = UIButton()
+        self.view.addSubview(mentions)
         content.translatesAutoresizingMaskIntoConstraints = false
         content.font = UIFont(name: "Arial", size: 20.0)
         content.textAlignment = NSTextAlignment.justified
@@ -56,10 +59,9 @@ class MemoryDetailsViewController: UIViewController, UITextViewDelegate {
         content.topAnchor.constraint(equalTo: header.bottomAnchor).isActive = true
         content.leftAnchor.constraint(equalTo: header.leftAnchor).isActive = true
         content.rightAnchor.constraint(equalTo: header.rightAnchor).isActive = true
-        content.bottomAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.bottomAnchor).isActive = true
+        content.text = memory.memoryContent
         
         header.text = memory.header
-        content.text = memory.memoryContent
         
         formatter.dateFormat = "dd/MM/yyyy"
         date.setTitle(formatter.string(from: memory.date), for: .normal)
@@ -71,7 +73,7 @@ class MemoryDetailsViewController: UIViewController, UITextViewDelegate {
         datePicker.addTarget(self, action: #selector(MemoryDetailsViewController.datePickerValueChanged(_:)), for: UIControl.Event.valueChanged)
         
         
-        NotificationCenter.default.addObserver(self, selector: #selector(self.keyboardWasShown(notification:)), name: UIResponder.keyboardWillChangeFrameNotification, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(self.keyboardWillShown(notification:)), name: UIResponder.keyboardWillShowNotification, object: nil)
         
         NotificationCenter.default.addObserver(self, selector: #selector(self.keyboardWillHidden(notification:)), name: UIResponder.keyboardWillHideNotification, object: nil)
         
@@ -88,10 +90,62 @@ class MemoryDetailsViewController: UIViewController, UITextViewDelegate {
         content.inputAccessoryView = toolbar
         
         header.delegate = self
+        
+        mentions.setTitle(getMentionsString(), for: .normal)
+        //mentions.setTitle("@alex, @alex, @alex, @alex, @alex, @alex, @alex, @alex, @alex, @alex, @alex, @alex", for: .normal)
+        mentions.setTitleColor(UIColor.init(red: 255/256, green: 120/256, blue: 62/256, alpha: 1.0), for: .normal)
+        mentions.translatesAutoresizingMaskIntoConstraints = false
+        
+        mentions.sizeToFit()
+        mentions.leftAnchor.constraint(equalTo: header.leftAnchor, constant: 5).isActive = true
+        mentions.rightAnchor.constraint(equalTo: header.rightAnchor, constant: -5).isActive = true
+        mentions.bottomAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.bottomAnchor, constant: -20).isActive = true
+        
+        content.bottomAnchor.constraint(equalTo: mentions.topAnchor, constant: -20).isActive = true
+        
+        mentions.heightAnchor.constraint(equalToConstant: 10).isActive = true
+        mentions.addTarget(self, action: #selector(MemoryDetailsViewController.mentionsPressed(_:)), for: UIControl.Event.touchUpInside)
+        mentions.contentHorizontalAlignment = .left
     }
     
+    @IBAction func mentionsPressed(_ sender: Any) {
+        if let vc = UIStoryboard(name: "Main", bundle: nil).instantiateViewController(withIdentifier: "MentionsViewController") as? MentionsViewController {
+            vc.memory = self.memory
+            vc.memoryDetailsVC = self
+            
+            vc.modalTransitionStyle = .coverVertical
+            present(vc, animated: true, completion: nil)
+        }
+    }
     
-    @objc func keyboardWasShown(notification: NSNotification) {
+    func getMentionsString() -> String {
+        var mentionsString = ""
+        var first = true
+        if  memory.mentions.count != 0 {
+            let mentions = memory.mentions
+            for mention in mentions {
+                if mentionsString.count + mention.count + 3 < 35 {
+                    if (first) {
+                        first = false
+                    }
+                    else {
+                        mentionsString += ", "
+                    }
+                    mentionsString += "@" + mention
+                }
+                else {
+                    mentionsString += "..."
+                    break
+                }
+            }
+        }
+        else {
+            mentionsString += "no mentions"
+        }
+        return mentionsString
+    }
+    
+    @objc func keyboardWillShown(notification: NSNotification) {
         if (self.content.isFirstResponder) {
             let info = notification.userInfo!
             let keyboardFrame: CGRect = (info[UIResponder.keyboardFrameEndUserInfoKey] as! NSValue).cgRectValue
@@ -100,6 +154,13 @@ class MemoryDetailsViewController: UIViewController, UITextViewDelegate {
                 //self.view.frame.origin.y = -keyboardFrame.height
                 self.content.bottomAnchor.constraint(equalTo: self.view.bottomAnchor, constant: -keyboardFrame.height).isActive = true
             })
+        }
+        else if (self.mentions.isFirstResponder) {
+            if let vc = UIStoryboard(name: "Main", bundle: nil).instantiateViewController(withIdentifier: "TabViewController") as? UITabBarController {
+                vc.modalPresentationStyle = .fullScreen
+                vc.modalTransitionStyle = .coverVertical
+                present(vc, animated: true, completion: nil)
+            }
         }
     }
     
@@ -122,7 +183,7 @@ class MemoryDetailsViewController: UIViewController, UITextViewDelegate {
             x.topAnchor.constraint(equalTo: self.header.bottomAnchor).isActive = true
             x.leftAnchor.constraint(equalTo: self.header.leftAnchor).isActive = true
             x.rightAnchor.constraint(equalTo: self.header.rightAnchor).isActive = true
-            x.bottomAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.bottomAnchor).isActive = true
+            x.bottomAnchor.constraint(equalTo: mentions.topAnchor, constant: -10).isActive = true
             content = x
             self.content.isHidden = false
         }
@@ -136,6 +197,7 @@ class MemoryDetailsViewController: UIViewController, UITextViewDelegate {
         }
         
         let new_mem = Memory(header: self.header.text, date: formatter.date(from: self.date.title(for: .normal)!)!, memoryContent: self.content.text, id: memory.id)
+        new_mem.mentions = memory.mentions
         
         if new_mem.header.isEmpty || new_mem.memoryContent.isEmpty {
             return
@@ -154,6 +216,7 @@ class MemoryDetailsViewController: UIViewController, UITextViewDelegate {
                 new_memory["header"] = new_mem.header
                 new_memory["memoryContent"] = new_mem.memoryContent
                 new_memory["date"] = new_mem.date
+                new_memory["mentions"] = new_mem.mentions
                 new_memory.saveInBackground()
             }
         }
