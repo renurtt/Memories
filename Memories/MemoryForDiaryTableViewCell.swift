@@ -8,8 +8,8 @@
 
 import UIKit
 
-class CustomCellTableViewCell: UITableViewCell {
-
+class MemoryForDiaryTableViewCell: UITableViewCell {
+    
     var header : String?
     var date : Date?
     
@@ -66,8 +66,6 @@ class CustomCellTableViewCell: UITableViewCell {
         headerView.topAnchor.constraint(equalTo: self.topAnchor, constant: 10).isActive = true
         headerView.bottomAnchor.constraint(equalTo: self.bottomAnchor).isActive = true
         headerView.widthAnchor.constraint(equalTo: self.widthAnchor, constant: -20).isActive = true
-        
-        
     }
     
     required init?(coder: NSCoder) {
@@ -81,18 +79,10 @@ class CustomCellTableViewCell: UITableViewCell {
         }
         if let date = date {
             let formatter = DateFormatter()
-            // initially set the format based on your datepicker date / server String
-            //formatter.dateFormat = "yyyy-MM-dd HH:mm:ss"
-
-            //let myString = formatter.string(from: date) // string purpose I add here
-            // convert your string to date
-            //let yourDate = formatter.date(from: myString)
-            //then again set the date format whhich type of output you need
             formatter.dateFormat = "dd/MM/yyyy"
-            // again convert your date to string
             let myString = formatter.string(from: date)
             dateView.text = myString
         }
     }
-
+    
 }

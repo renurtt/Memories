@@ -19,6 +19,16 @@ class MemoryDetailsViewController: UIViewController, UITextViewDelegate {
     var toolbar : UIToolbar!
     let formatter = DateFormatter()
     
+    
+    @IBAction func shareButtonPressed(_ sender: Any) {
+        var text = "Memory dated " + formatter.string(from: memory.date) + ":\n\n"
+        text += memory.header + "\n\n"
+        text += memory.memoryContent
+        let activityViewController : UIActivityViewController = UIActivityViewController(activityItems: [text], applicationActivities: nil)
+        
+        self.present(activityViewController, animated: true, completion: nil)
+    }
+    
     @IBAction func datePickerValueChanged(_ sender: Any) {
         date.setTitle(formatter.string(from: datePicker.date), for: .normal)
     }
@@ -41,7 +51,8 @@ class MemoryDetailsViewController: UIViewController, UITextViewDelegate {
     
     var memory : Memory!
     var memoryNumber : Int!
-    var memoriesVC : MemoriesViewController!
+    var memoriesVC : MemoriesViewController?
+    var memoriesShareVC : ShareViewController?
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -85,14 +96,11 @@ class MemoryDetailsViewController: UIViewController, UITextViewDelegate {
         let spaceButton = UIBarButtonItem(barButtonSystemItem: UIBarButtonItem.SystemItem.flexibleSpace, target: nil, action: nil)
         
         toolbar.setItems([doneButton,spaceButton], animated: false)
-        txtView.inputAccessoryView = toolbar
-        header.inputAccessoryView = toolbar
-        content.inputAccessoryView = toolbar
         
         header.delegate = self
         
         mentions.setTitle(getMentionsString(), for: .normal)
-        //mentions.setTitle("@alex, @alex, @alex, @alex, @alex, @alex, @alex, @alex, @alex, @alex, @alex, @alex", for: .normal)
+        
         mentions.setTitleColor(UIColor.init(red: 255/256, green: 120/256, blue: 62/256, alpha: 1.0), for: .normal)
         mentions.translatesAutoresizingMaskIntoConstraints = false
         
@@ -106,13 +114,25 @@ class MemoryDetailsViewController: UIViewController, UITextViewDelegate {
         mentions.heightAnchor.constraint(equalToConstant: 10).isActive = true
         mentions.addTarget(self, action: #selector(MemoryDetailsViewController.mentionsPressed(_:)), for: UIControl.Event.touchUpInside)
         mentions.contentHorizontalAlignment = .left
+        
+        if (memoriesShareVC != nil) {
+            header.isEditable = false
+            content.isEditable = false
+            date.isEnabled = false
+            self.view.backgroundColor = UIColor(red: 240/244, green: 1, blue: 245/255, alpha: 1)
+        }
+        else {
+            txtView.inputAccessoryView = toolbar
+            header.inputAccessoryView = toolbar
+            content.inputAccessoryView = toolbar
+        }
     }
     
     @IBAction func mentionsPressed(_ sender: Any) {
         if let vc = UIStoryboard(name: "Main", bundle: nil).instantiateViewController(withIdentifier: "MentionsViewController") as? MentionsViewController {
             vc.memory = self.memory
             vc.memoryDetailsVC = self
-            
+            vc.editable = (memoriesShareVC == nil)
             vc.modalTransitionStyle = .coverVertical
             present(vc, animated: true, completion: nil)
         }
@@ -120,13 +140,18 @@ class MemoryDetailsViewController: UIViewController, UITextViewDelegate {
     
     func getMentionsString() -> String {
         var mentionsString = ""
-        var first = true
-        if  memory.mentions.count != 0 {
+        var second = true
+        if  memory.mentions.count != 1 {
             let mentions = memory.mentions
+            var first = true
             for mention in mentions {
+                if first {
+                    first = false
+                    continue
+                }
                 if mentionsString.count + mention.count + 3 < 35 {
-                    if (first) {
-                        first = false
+                    if (second) {
+                        second = false
                     }
                     else {
                         mentionsString += ", "
@@ -192,8 +217,12 @@ class MemoryDetailsViewController: UIViewController, UITextViewDelegate {
     
     override func viewWillDisappear(_ animated: Bool) {
         
-        if let selectedIndexPath = self.memoriesVC.tableView.indexPathForSelectedRow {
-            self.memoriesVC.tableView.deselectRow(at: selectedIndexPath, animated: animated)
+        if let selectedIndexPath = self.memoriesVC?.tableView.indexPathForSelectedRow {
+            self.memoriesVC?.tableView.deselectRow(at: selectedIndexPath, animated: animated)
+        }
+        
+        if let selectedIndexPath = self.memoriesShareVC?.tableView.indexPathForSelectedRow {
+            self.memoriesShareVC?.tableView.deselectRow(at: selectedIndexPath, animated: animated)
         }
         
         let new_mem = Memory(header: self.header.text, date: formatter.date(from: self.date.title(for: .normal)!)!, memoryContent: self.content.text, id: memory.id)
@@ -205,6 +234,7 @@ class MemoryDetailsViewController: UIViewController, UITextViewDelegate {
         
         memory = new_mem
         self.memoriesVC?.updateData(at: memoryNumber, new_data: new_mem)
+        self.memoriesShareVC?.tableView.reloadRows(at: [IndexPath(row: memoryNumber, section: 0)], with: .fade)
         
         let query = PFQuery(className:"Memories")
         
@@ -229,15 +259,4 @@ class MemoryDetailsViewController: UIViewController, UITextViewDelegate {
         }
         return true
     }
-    
-    /*
-    // MARK: - Navigation
-
-    // In a storyboard-based application, you will often want to do a little preparation before navigation
-    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-        // Get the new view controller using segue.destination.
-        // Pass the selected object to the new view controller.
-    }
-    */
-
 }

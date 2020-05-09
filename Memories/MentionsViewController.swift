@@ -11,14 +11,18 @@ import Parse
 
 class MentionsViewController: UIViewController, UITableViewDelegate, UITableViewDataSource, UITextFieldDelegate {
 
+    @IBOutlet weak var saveButton: UIButton!
     @IBOutlet weak var textField: UITextField!
     @IBOutlet weak var tableView: UITableView!
     @IBOutlet weak var dropDownList: UITableView!
     var memory : Memory!
-    var memoryDetailsVC : MemoryDetailsViewController!
+    var memoryDetailsVC : MemoryDetailsViewController?
+    var memoryCreateVC : CreateMemoryViewController?
     var matches = [PFUser]()
     
     let toolbar = UIToolbar()
+    
+    var editable : Bool = true
     
     @IBAction func saveButtonPressed(_ sender: Any) {
         self.dismiss(animated: true, completion: nil)
@@ -54,6 +58,14 @@ class MentionsViewController: UIViewController, UITableViewDelegate, UITableView
         self.toolbar.setItems([doneButton,spaceButton], animated: false)
         toolbar.sizeToFit()
         textField.inputAccessoryView = toolbar
+        
+        if (memory.mentions.count == 1) {
+            textField.becomeFirstResponder()
+        }
+        if (!editable) {
+            tableView.isUserInteractionEnabled = false
+            textField.isEnabled = false
+        }
     }
     
     @objc func keyboardWillShown(notification: NSNotification) {
@@ -88,18 +100,21 @@ class MentionsViewController: UIViewController, UITableViewDelegate, UITableView
             return
         }
         
-        self.dropDownList.isHidden = true
+        UIView.animate(withDuration: 1.0, delay: 1.2, options: .curveEaseOut, animations: {
+            self.dropDownList.isHidden = true
+        }, completion: nil)
+        
         self.memory.mentions.append(username!)
-        self.tableView.insertRows(at: [IndexPath(row: self.memory.mentions.count-1, section: 0)], with: .fade)
+        self.tableView.insertRows(at: [IndexPath(row: self.memory.mentions.count-2, section: 0)], with: .fade)
         self.textField.text = ""
         self.view.endEditing(true)
         self.dropDownList.deselectRow(at: indexPath, animated: true)
     }
     
     func textFieldShouldReturn(_ textField: UITextField) -> Bool {
-        UIView.animate(withDuration: 0.5, animations: { () -> Void in
+        UIView.animate(withDuration: 1.0, delay: 1.2, options: .curveEaseOut, animations: {
             self.dropDownList.isHidden = false
-        })
+        }, completion: nil)
         let textFieldText = textField.text!
         if (textFieldText == "") {
             self.view.endEditing(true)
@@ -141,7 +156,7 @@ class MentionsViewController: UIViewController, UITableViewDelegate, UITableView
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         if (tableView == self.tableView) {
-            return memory.mentions.count
+            return self.memory.mentions.count - 1
         }
         if (tableView == self.dropDownList) {
             return self.matches.count
@@ -156,7 +171,7 @@ class MentionsViewController: UIViewController, UITableViewDelegate, UITableView
             cell.backgroundColor = UIColor(named: "Default")
             cell.textLabel?.textColor = UIColor.init(red: 255/256, green: 120/256, blue: 62/256, alpha: 1.0)
             cell.isUserInteractionEnabled = false
-            cell.textLabel!.text = "@" + memory.mentions[indexPath.row]
+            cell.textLabel!.text = "@" + memory.mentions[indexPath.row+1]
             return cell
         }
         if (tableView == self.dropDownList) {
@@ -171,18 +186,10 @@ class MentionsViewController: UIViewController, UITableViewDelegate, UITableView
     }
     
     override func viewWillDisappear(_ animated: Bool) {
-        memoryDetailsVC.mentions.setTitle(memoryDetailsVC.getMentionsString(), for: .normal)
+        memoryDetailsVC?.mentions.setTitle(memoryDetailsVC?.getMentionsString(), for: .normal)
+        memoryCreateVC?.mentionsArray = memory.mentions
+        memoryCreateVC?.mentions.setTitle(memoryCreateVC?.getMentionsString(), for: .normal)
     }
-
-    /*
-    // MARK: - Navigation
-
-    // In a storyboard-based application, you will often want to do a little preparation before navigation
-    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-        // Get the new view controller using segue.destination.
-        // Pass the selected object to the new view controller.
-    }
-    */
 
     func displayErrorMessage(message:String) {
         let alertView = UIAlertController(title: "Error", message: message, preferredStyle: .alert)

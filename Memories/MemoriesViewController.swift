@@ -52,7 +52,7 @@ class MemoriesViewController: UITableViewController {
         // Do any additional setup after loading the view.
         currentUser = PFUser.current()
         
-        self.tableView.register(CustomCellTableViewCell.self, forCellReuseIdentifier: "memoryCell")
+        self.tableView.register(MemoryForDiaryTableViewCell.self, forCellReuseIdentifier: "memoryCell")
         tableView.rowHeight = UITableView.automaticDimension
         tableView.estimatedRowHeight = 200
         
@@ -71,7 +71,7 @@ class MemoriesViewController: UITableViewController {
         self.tableView.tableHeaderView?.topAnchor.constraint(equalTo: self.view.topAnchor).isActive = true
         self.tableView.tableHeaderView?.leadingAnchor.constraint(equalTo: self.view.leadingAnchor).isActive = true
         self.tableView.tableHeaderView?.trailingAnchor.constraint(equalTo: self.view.trailingAnchor).isActive = true
-         /*
+        /*
          //indicator of connection (not used)
          imageView = UIImageView(image: UIImage(systemName: "cloud.fill"))
          self.tableView.tableHeaderView?.addSubview(imageView!)
@@ -79,11 +79,12 @@ class MemoriesViewController: UITableViewController {
          imageView?.topAnchor.constraint(equalTo: self.tableView.topAnchor).isActive = true
          imageView?.widthAnchor.constraint(equalToConstant: 30).isActive = true
          imageView?.isHidden = true
-        */
+         */
         
         self.refreshControl = UIRefreshControl()
+        //self.refreshControl?.translatesAutoresizingMaskIntoConstraints = false
         self.refreshControl!.addTarget(self, action: #selector(MemoriesViewController.handleRefresh(_:)), for: UIControl.Event.valueChanged)
-        self.refreshControl?.bottomAnchor.constraint(equalTo: self.tableView.topAnchor, constant: 50).isActive = true
+        //self.refreshControl?.bottomAnchor.constraint(equalTo: self.tableView.topAnchor, constant: 50).isActive = true
         
         topButton.addTarget(self, action: #selector(MemoriesViewController.createButtonPressed(_:)), for: UIControl.Event.touchUpInside)
         
@@ -108,7 +109,7 @@ class MemoriesViewController: UITableViewController {
         //so we dont use from-cache loading if it has been already done during this "session" (time after app open) to avoid doubling data and accomplish it only once during one session
         
         //cache clears after logout that's why we always see animated from-network loading after log in
-        if (data.isEmpty) {
+        if (data.isEmpty && query.hasCachedResult) {
             query.cachePolicy = PFCachePolicy.cacheOnly
             
             var objects = [PFObject]()
@@ -125,9 +126,9 @@ class MemoriesViewController: UITableViewController {
                 }
                 self.data.append(new_obj)
             }
-            self.tableView.reloadSections(IndexSet(integer: 0), with: .none)
-            
-            
+            if self.viewIfLoaded?.window != nil {
+                self.tableView.reloadSections(IndexSet(integer: 0), with: .none)
+            }
         }
         
         self.dataChanged = false
@@ -172,7 +173,7 @@ class MemoriesViewController: UITableViewController {
             self.refreshControl?.endRefreshing()
         }
     }
-
+    
     func updateData(at i : Int, new_data : Memory) {
         data[i] = new_data
         self.tableView.reloadRows(at: [IndexPath(row: i, section: 0)], with: .none)
@@ -224,8 +225,8 @@ class MemoriesViewController: UITableViewController {
     }
     
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let cell = self.tableView.dequeueReusableCell(withIdentifier: "memoryCell") as! CustomCellTableViewCell
-
+        let cell = self.tableView.dequeueReusableCell(withIdentifier: "memoryCell") as! MemoryForDiaryTableViewCell
+        
         cell.header = data[indexPath.row].header
         cell.date = data[indexPath.row].date
         cell.layoutSubviews()
@@ -251,4 +252,3 @@ class MemoriesViewController: UITableViewController {
         getMemories()
     }
 }
-

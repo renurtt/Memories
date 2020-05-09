@@ -16,7 +16,7 @@ class SignUpViewController: UIViewController {
         signUpPasswordField.text = ""
         // Do any additional setup after loading the view.
         let tap: UITapGestureRecognizer = UITapGestureRecognizer(target: self, action: #selector(self.dismissKeyboard))
-
+        
         view.addGestureRecognizer(tap)
     }
     
@@ -28,6 +28,19 @@ class SignUpViewController: UIViewController {
     @IBOutlet fileprivate var signUpPasswordField: UITextField!
     
     @IBAction func signUp(_ sender: UIButton) {
+        if (signUpUsernameField.text?.count ?? 0 > 10 ) {
+            displayErrorMessage(message: "Too long username. Maximum 10 symbols.")
+            return
+        }
+        if (signUpUsernameField.text?.contains(" "))! {
+            displayErrorMessage(message: "Username should not contain spaces.")
+            return
+        }
+        if (signUpUsernameField.text?.contains("@"))! {
+            displayErrorMessage(message: "Username should not contain @.")
+            return
+        }
+        
         let user = PFUser()
         user.username = signUpUsernameField.text
         user.password = signUpPasswordField.text
@@ -36,7 +49,7 @@ class SignUpViewController: UIViewController {
             UIViewController.removeSpinner(spinner: sv)
             if success{
                 self.loadHomeScreen()
-            }else{
+            } else {
                 if let descrip = error?.localizedDescription{
                     self.displayErrorMessage(message: descrip)
                 }
@@ -74,7 +87,7 @@ class SignUpViewController: UIViewController {
             present(vc, animated: true, completion: nil)
         }
     }
-
+    
     @IBAction func signIn(_ sender: UIButton) {
         if let vc = UIStoryboard(name: "Main", bundle: nil).instantiateViewController(withIdentifier: "SignInViewController") as? SignInViewController {
             vc.modalPresentationStyle = .fullScreen
@@ -126,17 +139,6 @@ class SignInViewController: UIViewController {
         }
         self.present(alertView, animated: true, completion:nil)
     }
-    
-    /*
-     // MARK: - Navigation
-     
-     // In a storyboard-based application, you will often want to do a little preparation before navigation
-     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-     // Get the new view controller using segue.destination.
-     // Pass the selected object to the new view controller.
-     }
-     */
-    
     
     func loadHomeScreen(){
         if let vc = UIStoryboard(name: "Main", bundle: nil).instantiateViewController(withIdentifier: "TabViewController") as? UITabBarController {

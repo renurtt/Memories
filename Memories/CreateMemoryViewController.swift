@@ -19,7 +19,9 @@ class CreateMemoryViewController: UIViewController, UITextViewDelegate {
     let formatter = DateFormatter()
     
     var Saved : Bool = false
+    var mentions : UIButton = UIButton()
     
+    var mentionsArray : [String] = [PFUser.current()!.username!]
     
     var memoriesVC : MemoriesViewController!
     
@@ -50,13 +52,14 @@ class CreateMemoryViewController: UIViewController, UITextViewDelegate {
     
     func saveData() {
         let new_mem = Memory(header: self.header.text, date: formatter.date(from: self.date.title(for: .normal)!)!, memoryContent: self.content.text, id: "")
+        new_mem.mentions = mentionsArray
         
         if new_mem.header.isEmpty || new_mem.memoryContent.isEmpty {
             displayErrorMessage(message: "Memory title and content can't be empty.")
             return
         }
         //
-        new_mem.mentions = ["renurtt17", "renurtt7", "renurtt17", "renurtt7", "renurtt17", "renurtt7"]
+        
         //
         self.memoriesVC.addData(new_data: new_mem)
         Saved = true
@@ -67,7 +70,7 @@ class CreateMemoryViewController: UIViewController, UITextViewDelegate {
         new_memory["date"] = new_mem.date
         new_memory["owner"] = PFUser.current()
         
-        new_memory["mentions"] = ["renurtt17", "renurtt7", "renurtt17", "renurtt7", "renurtt17", "renurtt7"]
+        new_memory["mentions"] = new_mem.mentions
         
         new_memory.saveInBackground {
             (success: Bool, error: Error?) in
@@ -99,10 +102,11 @@ class CreateMemoryViewController: UIViewController, UITextViewDelegate {
         content.textAlignment = NSTextAlignment.justified
         content.backgroundColor = UIColor(named: "Default")
         self.view.addSubview(content)
+        self.view.addSubview(mentions)
         content.topAnchor.constraint(equalTo: header.bottomAnchor).isActive = true
         content.leftAnchor.constraint(equalTo: header.leftAnchor).isActive = true
         content.rightAnchor.constraint(equalTo: header.rightAnchor).isActive = true
-        content.bottomAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.bottomAnchor).isActive = true
+        content.bottomAnchor.constraint(equalTo: mentions.topAnchor, constant: -20).isActive = true
         
         header.text = "Header"
         content.text = "Content"
@@ -136,6 +140,64 @@ class CreateMemoryViewController: UIViewController, UITextViewDelegate {
         content.inputAccessoryView = toolbar
         
         header.delegate = self
+        
+        //mentions
+        mentions.setTitle(getMentionsString(), for: .normal)
+        
+        mentions.setTitleColor(UIColor.init(red: 255/256, green: 120/256, blue: 62/256, alpha: 1.0), for: .normal)
+        mentions.translatesAutoresizingMaskIntoConstraints = false
+        
+        mentions.sizeToFit()
+        mentions.leftAnchor.constraint(equalTo: self.header.leftAnchor, constant: 5).isActive = true
+        mentions.rightAnchor.constraint(equalTo: self.header.rightAnchor, constant: -5).isActive = true
+        mentions.bottomAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.bottomAnchor, constant: -20).isActive = true
+        mentions.heightAnchor.constraint(equalToConstant: 10).isActive = true
+        mentions.addTarget(self, action: #selector(MemoryDetailsViewController.mentionsPressed(_:)), for: UIControl.Event.touchUpInside)
+        mentions.contentHorizontalAlignment = .left
+    }
+    
+    @IBAction func mentionsPressed(_ sender: Any) {
+        if let vc = UIStoryboard(name: "Main", bundle: nil).instantiateViewController(withIdentifier: "MentionsViewController") as? MentionsViewController {
+            vc.memory = Memory(header: "", date: Date(), memoryContent: "", id: "")
+            vc.memory.mentions = mentionsArray
+            
+            vc.memoryCreateVC = self
+            
+            vc.modalTransitionStyle = .coverVertical
+            present(vc, animated: true, completion: nil)
+        }
+    }
+    
+    func getMentionsString() -> String {
+        var mentionsString = ""
+        var second = true
+        if  mentionsArray.count != 1 {
+            let mentions = mentionsArray
+            var first = true
+            for mention in mentions {
+                if first {
+                    first = false
+                    continue
+                }
+                if mentionsString.count + mention.count + 3 < 35 {
+                    if (second) {
+                        second = false
+                    }
+                    else {
+                        mentionsString += ", "
+                    }
+                    mentionsString += "@" + mention
+                }
+                else {
+                    mentionsString += "..."
+                    break
+                }
+            }
+        }
+        else {
+            mentionsString += "add mentions"
+        }
+        return mentionsString
     }
     
     @objc func keyboardWasShown(notification: NSNotification) {
@@ -147,6 +209,13 @@ class CreateMemoryViewController: UIViewController, UITextViewDelegate {
                 //self.view.frame.origin.y = -keyboardFrame.height
                 self.content.bottomAnchor.constraint(equalTo: self.view.bottomAnchor, constant: -keyboardFrame.height).isActive = true
             })
+        }
+        else if (self.mentions.isFirstResponder) {
+            if let vc = UIStoryboard(name: "Main", bundle: nil).instantiateViewController(withIdentifier: "TabViewController") as? UITabBarController {
+                vc.modalPresentationStyle = .fullScreen
+                vc.modalTransitionStyle = .coverVertical
+                present(vc, animated: true, completion: nil)
+            }
         }
     }
     
@@ -169,7 +238,7 @@ class CreateMemoryViewController: UIViewController, UITextViewDelegate {
             x.topAnchor.constraint(equalTo: self.header.bottomAnchor).isActive = true
             x.leftAnchor.constraint(equalTo: self.header.leftAnchor).isActive = true
             x.rightAnchor.constraint(equalTo: self.header.rightAnchor).isActive = true
-            x.bottomAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.bottomAnchor).isActive = true
+            x.bottomAnchor.constraint(equalTo: mentions.topAnchor, constant: -10).isActive = true
             content = x
             self.content.isHidden = false
         }
@@ -191,15 +260,6 @@ class CreateMemoryViewController: UIViewController, UITextViewDelegate {
         self.present(alertView, animated: true, completion:nil)
     }
     
-    /*
-     // MARK: - Navigation
-     
-     // In a storyboard-based application, you will often want to do a little preparation before navigation
-     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-     // Get the new view controller using segue.destination.
-     // Pass the selected object to the new view controller.
-     }
-     */
     func textView(_ textView: UITextView, shouldChangeTextIn range: NSRange, replacementText text: String) -> Bool {
         if(text == "\n") {
             header.resignFirstResponder()

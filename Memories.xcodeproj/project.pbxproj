@@ -19,7 +19,8 @@
 		989D03E4245EEFEA00B24F2D /* Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 989D03E3245EEFEA00B24F2D /* Extensions.swift */; };
 		98C1433424632ADB00EACA36 /* CreateMemoryViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 98C1433324632ADB00EACA36 /* CreateMemoryViewController.swift */; };
 		98C143362464A56A00EACA36 /* MentionsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 98C143352464A56A00EACA36 /* MentionsViewController.swift */; };
-		98DB9535245F371B005953D5 /* CustomCellTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 98DB9534245F371B005953D5 /* CustomCellTableViewCell.swift */; };
+		98C143382465FF7D00EACA36 /* MemoryForShareTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 98C143372465FF7D00EACA36 /* MemoryForShareTableViewCell.swift */; };
+		98DB9535245F371B005953D5 /* MemoryForDiaryTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 98DB9534245F371B005953D5 /* MemoryForDiaryTableViewCell.swift */; };
 		98DB95372461B33C005953D5 /* MemoryDetailsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 98DB95362461B33C005953D5 /* MemoryDetailsViewController.swift */; };
 /* End PBXBuildFile section */
 
@@ -39,7 +40,8 @@
 		989D03E3245EEFEA00B24F2D /* Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Extensions.swift; sourceTree = "<group>"; };
 		98C1433324632ADB00EACA36 /* CreateMemoryViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CreateMemoryViewController.swift; sourceTree = "<group>"; };
 		98C143352464A56A00EACA36 /* MentionsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MentionsViewController.swift; sourceTree = "<group>"; };
-		98DB9534245F371B005953D5 /* CustomCellTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomCellTableViewCell.swift; sourceTree = "<group>"; };
+		98C143372465FF7D00EACA36 /* MemoryForShareTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MemoryForShareTableViewCell.swift; sourceTree = "<group>"; };
+		98DB9534245F371B005953D5 /* MemoryForDiaryTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MemoryForDiaryTableViewCell.swift; sourceTree = "<group>"; };
 		98DB95362461B33C005953D5 /* MemoryDetailsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MemoryDetailsViewController.swift; sourceTree = "<group>"; };
 		B4AC981986E254384E5AE124 /* Pods-Memories.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Memories.release.xcconfig"; path = "Target Support Files/Pods-Memories/Pods-Memories.release.xcconfig"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -95,10 +97,11 @@
 				9813A0882450DB9A00CDBE5B /* Info.plist */,
 				989D03E1245EEED200B24F2D /* SignUpViewController.swift */,
 				989D03E3245EEFEA00B24F2D /* Extensions.swift */,
-				98DB9534245F371B005953D5 /* CustomCellTableViewCell.swift */,
+				98DB9534245F371B005953D5 /* MemoryForDiaryTableViewCell.swift */,
 				98DB95362461B33C005953D5 /* MemoryDetailsViewController.swift */,
 				98C1433324632ADB00EACA36 /* CreateMemoryViewController.swift */,
 				98C143352464A56A00EACA36 /* MentionsViewController.swift */,
+				98C143372465FF7D00EACA36 /* MemoryForShareTableViewCell.swift */,
 			);
 			path = Memories;
 			sourceTree = "<group>";
@@ -228,10 +231,11 @@
 			buildActionMask = 2147483647;
 			files = (
 				9813A07F2450DB9100CDBE5B /* ShareViewController.swift in Sources */,
+				98C143382465FF7D00EACA36 /* MemoryForShareTableViewCell.swift in Sources */,
 				989D03E4245EEFEA00B24F2D /* Extensions.swift in Sources */,
 				9813A07D2450DB9100CDBE5B /* MemoriesViewController.swift in Sources */,
 				98C143362464A56A00EACA36 /* MentionsViewController.swift in Sources */,
-				98DB9535245F371B005953D5 /* CustomCellTableViewCell.swift in Sources */,
+				98DB9535245F371B005953D5 /* MemoryForDiaryTableViewCell.swift in Sources */,
 				9813A0792450DB9100CDBE5B /* AppDelegate.swift in Sources */,
 				98DB95372461B33C005953D5 /* MemoryDetailsViewController.swift in Sources */,
 				9813A07B2450DB9100CDBE5B /* SceneDelegate.swift in Sources */,
