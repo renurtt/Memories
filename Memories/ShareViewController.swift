@@ -14,7 +14,7 @@ class ShareViewController: UIViewController, UITableViewDelegate, UITableViewDat
         return memories.count
     }
     
-    @IBOutlet weak var noMemoriesTextView: UITextView!
+    @IBOutlet weak var noMemoriesLabel: UILabel!
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = self.tableView.dequeueReusableCell(withIdentifier: "memoryShareCell") as! MemoryForShareTableViewCell
         
@@ -59,6 +59,7 @@ class ShareViewController: UIViewController, UITableViewDelegate, UITableViewDat
     
     @IBOutlet fileprivate var username: UILabel!
     @IBOutlet weak var tableView: UITableView!
+    @IBOutlet weak var logoutButton: UIButton!
     
     var memories = [Memory]()
     var date1 : Date!
@@ -70,8 +71,14 @@ class ShareViewController: UIViewController, UITableViewDelegate, UITableViewDat
         // Do any additional setup after loading the view.
         tableView.backgroundColor = UIColor.init(named: "Default")
         self.tableView.register(MemoryForShareTableViewCell.self, forCellReuseIdentifier: "memoryShareCell")
+        username.text = ""
+        if let username1 = PFUser.current()?.username {
+            username.text = "@" + username1
+        }
+        else {
+            logoutButton.setTitle("Sign in", for: .normal)
+        }
         
-        username.text = "@" + (PFUser.current()?.username)!
         username.sizeToFit()
         
         let day = formatterDdMm.string(from: Date(timeIntervalSinceNow: 0))
@@ -84,10 +91,19 @@ class ShareViewController: UIViewController, UITableViewDelegate, UITableViewDat
         date5 = formatter.date(from: string)
         tableView.delegate = self
         tableView.dataSource = self
+        
+        //noMemoriesTextView.translatesAutoresizingMaskIntoConstraints = false
+        //noMemoriesTextView.centerYAnchor.constraint(view.centerYAnchor).isActive.true
+        //noMemoriesTextView.centerXAnchor.constraint(view.centerXAnchor)
     }
     
     
     func updateMemories() {
+        if (PFUser.current() == nil) {
+            self.noMemoriesLabel.text = "No memories for today.\nCome back later!"
+            self.noMemoriesLabel.isHidden = false
+            return
+        }
         let query = PFQuery(className: "Memories")
         query.whereKey("owner", equalTo: PFUser.current()!)
         query.whereKey("date", containedIn: [date1!, date3!, date5!])
@@ -138,11 +154,11 @@ class ShareViewController: UIViewController, UITableViewDelegate, UITableViewDat
                     self.tableView.reloadSections(IndexSet(integer: 0), with: .fade)
                 }
                 if (self.memories.count == 0) {
-                    self.noMemoriesTextView.text = "No memories today.\nCome back later!"
-                    self.noMemoriesTextView.isHidden = false
+                    self.noMemoriesLabel.text = "No memories for today."
+                    self.noMemoriesLabel.isHidden = false
                 }
                 else {
-                    self.noMemoriesTextView.isHidden = true
+                    self.noMemoriesLabel.isHidden = true
                 }
             }
         }
@@ -173,6 +189,10 @@ class ShareViewController: UIViewController, UITableViewDelegate, UITableViewDat
     }
     
     @IBAction func logoutOfApp(_ sender: UIButton) {
+        if (PFUser.current() == nil) {
+            loadLoginScreen()
+            return
+        }
         let sv = UIViewController.displaySpinner(onView: self.view, darkenBack: true)
         PFUser.logOutInBackground { (error: Error?) in
             UIViewController.removeSpinner(spinner: sv)

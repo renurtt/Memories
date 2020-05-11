@@ -45,9 +45,10 @@ class MemoriesViewController: UITableViewController {
     
     var imageView :UIImageView?
     
+    
+    
     override func viewDidLoad() {
         super.viewDidLoad()
-        
         
         // Do any additional setup after loading the view.
         currentUser = PFUser.current()
@@ -60,37 +61,46 @@ class MemoriesViewController: UITableViewController {
         
         let topButton = UIButton(type: UIButton.ButtonType.custom) as UIButton
         
+        
         if let image  = UIImage(systemName: "plus") {
             topButton.setImage(image, for: [])
         }
         
         topButton.sizeToFit()
         self.tableView.tableHeaderView = topButton
-        //self.tableView.tableHeaderView?.topAnchor.constraint(equalTo: self.view.topAnchor).isActive = true
+        
+        topButton.addTarget(self, action: #selector(MemoriesViewController.createButtonPressed(_:)), for: UIControl.Event.touchUpInside)
         
         self.tableView.tableHeaderView?.topAnchor.constraint(equalTo: self.view.topAnchor).isActive = true
         self.tableView.tableHeaderView?.leadingAnchor.constraint(equalTo: self.view.leadingAnchor).isActive = true
         self.tableView.tableHeaderView?.trailingAnchor.constraint(equalTo: self.view.trailingAnchor).isActive = true
-        /*
-         //indicator of connection (not used)
-         imageView = UIImageView(image: UIImage(systemName: "cloud.fill"))
-         self.tableView.tableHeaderView?.addSubview(imageView!)
-         imageView?.leftAnchor.constraint(greaterThanOrEqualTo: self.tableView.leftAnchor, constant: 30).isActive = true
-         imageView?.topAnchor.constraint(equalTo: self.tableView.topAnchor).isActive = true
-         imageView?.widthAnchor.constraint(equalToConstant: 30).isActive = true
-         imageView?.isHidden = true
-         */
         
         self.refreshControl = UIRefreshControl()
-        //self.refreshControl?.translatesAutoresizingMaskIntoConstraints = false
         self.refreshControl!.addTarget(self, action: #selector(MemoriesViewController.handleRefresh(_:)), for: UIControl.Event.valueChanged)
-        //self.refreshControl?.bottomAnchor.constraint(equalTo: self.tableView.topAnchor, constant: 50).isActive = true
-        
-        topButton.addTarget(self, action: #selector(MemoriesViewController.createButtonPressed(_:)), for: UIControl.Event.touchUpInside)
-        
     }
     
     @IBAction func createButtonPressed(_ sender: Any) {
+        if currentUser == nil {
+            let alertView = UIAlertController(title: "Alert", message: "First you have to sign in.", preferredStyle: .alert)
+            
+            let CancelAction = UIAlertAction(title: "Cancel", style: .default) { (action:UIAlertAction) in
+            }
+            alertView.addAction(CancelAction)
+            if let presenter = alertView.popoverPresentationController {
+                presenter.sourceView = self.view
+                presenter.sourceRect = self.view.bounds
+            }
+            
+            let OKAction = UIAlertAction(title: "Sign in", style: .default) { (action:UIAlertAction) in
+                self.loadSignInScreen()
+            }
+            alertView.addAction(OKAction)
+            
+            
+            self.present(alertView, animated: true, completion:nil)
+            
+            return
+        }
         if let vc = UIStoryboard(name: "Main", bundle: nil).instantiateViewController(withIdentifier: "CreateMemoryViewController") as? CreateMemoryViewController {
             vc.memoriesVC = self
             
@@ -185,9 +195,7 @@ class MemoriesViewController: UITableViewController {
     }
     
     override func viewDidAppear(_ animated: Bool) {
-        if currentUser == nil {
-            loadSignInScreen()
-        }
+        
         self.refreshControl?.endRefreshing()
     }
     
@@ -245,6 +253,12 @@ class MemoriesViewController: UITableViewController {
     }
     
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+        if (data.count == 0) {
+            self.tableView.separatorStyle = .none
+        }
+        else {
+            self.tableView.separatorStyle = .singleLine
+        }
         return data.count
     }
     

@@ -141,10 +141,11 @@ class CreateMemoryViewController: UIViewController, UITextViewDelegate {
         
         header.delegate = self
         
+        
         //mentions
         mentions.setTitle(getMentionsString(), for: .normal)
         
-        mentions.setTitleColor(UIColor.init(red: 255/256, green: 120/256, blue: 62/256, alpha: 1.0), for: .normal)
+        mentions.setTitleColor(UIColor.init(red: 20/256, green: 126/256, blue: 251/256, alpha: 1.0), for: .normal)
         mentions.translatesAutoresizingMaskIntoConstraints = false
         
         mentions.sizeToFit()
@@ -195,7 +196,7 @@ class CreateMemoryViewController: UIViewController, UITextViewDelegate {
             }
         }
         else {
-            mentionsString += "add mentions"
+            mentionsString += "Add mentions"
         }
         return mentionsString
     }

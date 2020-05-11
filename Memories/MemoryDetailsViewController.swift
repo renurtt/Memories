@@ -20,6 +20,9 @@ class MemoryDetailsViewController: UIViewController, UITextViewDelegate {
     let formatter = DateFormatter()
     
     
+    @IBAction func saveButtonPressed(_ sender: Any) {
+        self.dismiss(animated: true, completion: nil)
+    }
     @IBAction func shareButtonPressed(_ sender: Any) {
         var text = "Memory dated " + formatter.string(from: memory.date) + ":\n\n"
         text += memory.header + "\n\n"
@@ -101,7 +104,7 @@ class MemoryDetailsViewController: UIViewController, UITextViewDelegate {
         
         mentions.setTitle(getMentionsString(), for: .normal)
         
-        mentions.setTitleColor(UIColor.init(red: 255/256, green: 120/256, blue: 62/256, alpha: 1.0), for: .normal)
+        mentions.setTitleColor(UIColor.init(red: 20/256, green: 126/256, blue: 251/256, alpha: 1.0), for: .normal)
         mentions.translatesAutoresizingMaskIntoConstraints = false
         
         mentions.sizeToFit()
@@ -165,7 +168,7 @@ class MemoryDetailsViewController: UIViewController, UITextViewDelegate {
             }
         }
         else {
-            mentionsString += "no mentions"
+            mentionsString += "No mentions"
         }
         return mentionsString
     }
