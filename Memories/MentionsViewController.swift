@@ -149,7 +149,7 @@ class MentionsViewController: UIViewController, UITableViewDelegate, UITableView
     
     func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCell.EditingStyle, forRowAt indexPath: IndexPath) {
         if (tableView == self.tableView && editingStyle == .delete) {
-            memory.mentions.remove(at: indexPath.row)
+            memory.mentions.remove(at: indexPath.row+1)
             tableView.deleteRows(at: [indexPath], with: .fade)
         }
     }
